@@ -1,8 +1,9 @@
-
 import { useForm } from "@mantine/form";
 import * as Yup from "yup";
 import { yupResolver } from "mantine-form-yup-resolver";
 import { Plus } from "lucide-react";
+import { Todo, useAddTodo } from "./store/todosStore";
+import { nanoid } from "nanoid";
 
 interface FormValues {
   title: string;
@@ -14,11 +15,9 @@ const todoSchema = Yup.object().shape({
   priority: Yup.mixed().oneOf(["low", "medium", "high"]).required(),
 });
 
-interface TodoFormProps {
-  onSubmit: (values: FormValues) => void;
-}
+const TodoForm = () => {
+  const addTodo = useAddTodo();
 
-const TodoForm: React.FC<TodoFormProps> = ({ onSubmit }) => {
   const form = useForm({
     mode: "controlled",
     initialValues: {
@@ -28,10 +27,25 @@ const TodoForm: React.FC<TodoFormProps> = ({ onSubmit }) => {
     validate: yupResolver(todoSchema),
   });
 
+  const handleSubmitTodo = (values: FormValues) => {
+    const todo: Todo = {
+      id: nanoid(),
+      title: values.title,
+      addedAt: new Date(),
+      priority: values.priority,
+      completed: false,
+    };
+
+    addTodo(todo);
+    form.reset();
+  };
+
   return (
     <form
       className="space-y-4 bg-white p-4 rounded-md shadow"
-      onSubmit={form.onSubmit((values) => onSubmit(values as FormValues))}
+      onSubmit={form.onSubmit((values) =>
+        handleSubmitTodo(values as FormValues)
+      )}
     >
       <fieldset className="flex flex-col gap-1">
         <label htmlFor="title" className="text-xs font-semibold">

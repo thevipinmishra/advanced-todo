@@ -5,7 +5,7 @@ interface TodosStore {
   todos: Todo[];
   addTodo: (todo: Todo) => void;
   removeTodo: (id: string) => void;
-  editTodo: (id: string, updates: Partial<Omit<Todo, "id">>) => void;
+  editTodo: (id: string, updates: Partial<Omit<Todo, "id">>, updateModifiedAt?: boolean) => void;
 }
 
 export interface Todo {
@@ -32,10 +32,16 @@ const useTodosStore = create<TodosStore>()(
             todos: state.todos.filter((todo) => todo.id !== id),
           }));
         },
-        editTodo: (id, updates) => {
+        editTodo: (id, updates, updateModifiedAt = true) => {
           set((state) => ({
             todos: state.todos.map((todo) =>
-              todo.id === id ? { ...todo, ...updates, lastModifiedAt: new Date() } : todo
+              todo.id === id
+                ? {
+                    ...todo,
+                    ...updates,
+                    lastModifiedAt: updateModifiedAt ? new Date() : todo.lastModifiedAt,
+                  }
+                : todo
             ),
           }));
         },
