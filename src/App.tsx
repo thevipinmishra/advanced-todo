@@ -151,7 +151,7 @@ function App() {
                 </div>
               )}
             </div>
-            <div className="shadow rounded-xl">
+            <div className="shadow rounded-xl space-y-[2px]">
               {sortedTodos.map((todo) => (
                 <Todo key={todo.id} todo={todo} />
               ))}

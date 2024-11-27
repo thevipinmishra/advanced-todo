@@ -1,8 +1,10 @@
+import React, { useState } from "react";
 import { Switch } from "@ark-ui/react/switch";
 import clsx from "clsx";
 import { formatRelative } from "date-fns";
 import { Editable } from "@ark-ui/react/editable";
-import { X } from "lucide-react";
+import { Tooltip } from "@ark-ui/react/tooltip";
+import { Trash2 } from "lucide-react";
 import { useEditTodo, useRemoveTodo } from "./store/todosStore";
 
 interface TodoProps {
@@ -17,6 +19,7 @@ interface TodoProps {
 }
 
 const Todo: React.FC<TodoProps> = ({ todo }) => {
+  const [tempTitle, setTempTitle] = useState(todo.title);
   const editTodo = useEditTodo();
   const removeTodo = useRemoveTodo();
 
@@ -33,11 +36,11 @@ const Todo: React.FC<TodoProps> = ({ todo }) => {
       data-priority={todo.priority}
       className={clsx(
         todo.priority === "low"
-          ? "bg-green-50"
+          ? "bg-green-100"
           : todo.priority === "medium"
-          ? "bg-orange-200"
+          ? "bg-orange-100"
           : "bg-red-100",
-        "p-6 relative group first:rounded-t-xl transition-all last:rounded-b-xl space-y-1 border-l-4",
+        "p-6 relative group first:rounded-t-xl transition-all last:rounded-b-xl space-y-3 border-l-4",
         todo.completed ? "border-green-500" : "border-transparent"
       )}
     >
@@ -63,15 +66,23 @@ const Todo: React.FC<TodoProps> = ({ todo }) => {
         )}
       </p>
       <Editable.Root
-        value={todo.title}
+        value={tempTitle}
         disabled={todo.completed}
-        onValueChange={(details) => editTodo(todo.id, { title: details.value })}
+        onValueChange={(details) => setTempTitle(details.value)}
+        onValueCommit={(details) => {
+          if (details.value !== todo.title) {
+            editTodo(todo.id, { title: details.value });
+          }
+        }}
         placeholder="Placeholder"
         activationMode="dblclick"
       >
         <Editable.Area>
-          <Editable.Input className="font-semibold text-lg w-full" />
-          <Editable.Preview className="font-extrabold text-xl lg:text-2xl" />
+          <Editable.Input className="font-semibold outline-none rounded-sm text-xl w-full" />
+          <Editable.Preview
+            title="Double click to edit"
+            className="font-extrabold text-xl lg:text-2xl"
+          />
         </Editable.Area>
       </Editable.Root>
       <Switch.Root
@@ -92,12 +103,19 @@ const Todo: React.FC<TodoProps> = ({ todo }) => {
         <Switch.HiddenInput />
       </Switch.Root>
 
-      <button
-        onClick={handleRemoveTodo}
-        className="size-8 flex justify-center text-slate-700 items-center absolute right-2 top-2 rounded-full hover:bg-gray-300/20 backdrop-blur-sm transition-colors duration-200"
-      >
-        <X className="size-4" />
-      </button>
+      <Tooltip.Root>
+        <Tooltip.Trigger
+          onClick={handleRemoveTodo}
+          className="size-8 flex justify-center text-slate-700 items-center absolute right-2 top-2 rounded-full hover:bg-gray-300/20 backdrop-blur-sm transition-colors duration-200"
+        >
+          <Trash2 className="size-4" />
+        </Tooltip.Trigger>
+        <Tooltip.Positioner className="!mt-0">
+          <Tooltip.Content className="p-1 text-sm rounded-md shadow bg-white data-open:animate-in data-open:fade-in data-close:animate-out data-close:fade-out-0">
+            <p className="text-xs font-medium">Remove</p>
+          </Tooltip.Content>
+        </Tooltip.Positioner>
+      </Tooltip.Root>
     </div>
   );
 };
